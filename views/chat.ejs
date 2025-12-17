@@ -1,139 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Application</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <style>
-        body {
-            display: block;
-            background-color: #f0f2f5;
-        }
-        .chat-container {
-            max-width: 800px;
-            margin: 20px auto;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 40px);
-            overflow: hidden;
-        }
-        .chat-header {
-            background-color: #007bff;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 20px;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .chat-header button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .chat-messages {
-            flex-grow: 1;
-            padding: 15px;
-            overflow-y: auto;
-            border-bottom: 1px solid #eee;
-        }
-        .message-item {
-            margin-bottom: 10px;
-            word-wrap: break-word;
-        }
-        .message-item strong {
-            color: #007bff;
-        }
-        .message-item .timestamp {
-            font-size: 0.8em;
-            color: #888;
-            margin-left: 10px;
-        }
-        .chat-input {
-            display: flex;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-bottom-left-radius: 8px;
-            border-bottom-right-radius: 8px;
-        }
-        .chat-input input[type="text"] {
-            flex-grow: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-right: 10px;
-            box-sizing: border-box;
-        }
-        .chat-input button {
-            width: auto;
-            padding: 10px 20px;
-            font-size: 1em;
-        }
-    </style>
-</head>
-<body>
-    <div class="chat-container">
-        <div class="chat-header">
-            <span>Live Chat</span>
-            <form action="/logout" method="POST">
-                <button type="submit">Logout</button>
-            </form>
-        </div>
-        <div class="chat-messages" id="chat-messages">
-            <% messages.forEach(function(message) { %>
-                <div class="message-item">
-                    <strong><%= message.username %>:</strong> <%= message.message %>
-                    <span class="timestamp"><%= new Date(message.timestamp).toLocaleString() %></span>
-                </div>
-            <% }); %>
-        </div>
-        <div class="chat-input">
-            <input type="text" id="message-input" placeholder="Type your message...">
-            <button id="send-button">Send</button>
-        </div>
+<div id="menu" class="col-md-3 border bg-white rounded-start">
+  <div id="pesquisa" class="row">
+    <div class="col-6  p-1 my-3">
+      <button class="btn"><i class="fas fa-edit"></i></button>
     </div>
+    <div class="col-6 text-end p-1 my-3">
+        <form action="/logout" method="POST">
+            
+            <button type="submit" class="btn"><i class="fas fa-power-off"></i></button>
+        </form>
+    </div>
+  </div>
+  <div id="conversas" class="row d-flex align-items-stretch">
+    <%- include('user.ejs') %>
+  </div>
+</div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        const messagesDiv = document.getElementById('chat-messages');
-        const messageInput = document.getElementById('message-input');
-        const sendButton = document.getElementById('send-button');
+<div id="talk" class="col-md-9 border bg-white rounded-end px-0 mx-0 d-flex flex-column">
+  <nav class="navbar navbar-light bg-light border-bottom shadow">
+    <div class="container-fluid">
+      <div class="d-flex align-items-center w-100">
+        <div id="friend_image" class="me-3">
+          <img src="/avatar.png" class="img-fluid rounded-circle border" style="width: 50px; height: 50px;" alt="User">
+        </div>
+        <div class="flex-grow-1">
+          <p class="fw-bolder text-truncate p-0 m-0">
+            <% if (receiverId) { %>
+              <%= allUsers.find(u => u.id == receiverId)?.username || 'User' %>
+            <% } else { %>
+              Public Chat
+            <% } %>
+          </p>
+        </div>
+      </div>
+    </div>
+  </nav>
 
-        sendButton.addEventListener('click', () => {
-            const message = messageInput.value;
-            if (message) {
-                socket.emit('chat message', message);
-                messageInput.value = '';
-            }
-        });
+  <div id="chat-area" class="chat-area overflow-auto bg-white flex-grow-1 p-3" style="height: calc(100vh - 200px);">
+    <% if (messages.length === 0) { %>
+      <div class="text-center text-muted mt-5">
+        <p>No messages yet. Start the conversation!</p>
+      </div>
+    <% } else { %>
+      <% messages.forEach(function(message) { %>
+              <div id="chat-messages" class="<%= receiverId == message.senderId ? 'msg-recebida float-start' : 'msg-enviada float-end ' %> position-relative p-3 m-2 rounded-3">
+                <%= message.message %>
+                <br>
+                <small class="float-end text-muted">
+                    <%= new Date(message.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) %> 
+                </small>
+              </div>
+              <span class="clearfix"></span>
+          <% }); %>
+    <% } %>
+  </div>
 
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendButton.click();
-            }
-        });
-
-        socket.on('chat message', (msg) => {
-            const messageItem = document.createElement('div');
-            messageItem.classList.add('message-item');
-            const timestamp = new Date(msg.timestamp).toLocaleString();
-            messageItem.innerHTML = `<strong>${msg.username}:</strong> ${msg.message} <span class="timestamp">${timestamp}</span>`;
-            messagesDiv.appendChild(messageItem);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll to bottom
-        });
-
-        // Scroll to the bottom when the page loads
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    </script>
-</body>
-</html>
+  <div class="input-group p-3 border-top bg-light">
+    <input id="message-input" type="text" class="form-control border border-secondary p-3" placeholder="Type a message..." aria-label="Message input">
+    <button id="send-button" class="btn btn-primary px-4" type="button">
+      <i class="fas fa-paper-plane"></i>
+    </button>
+  </div>
+</div>
+<script>
+    // Global variables from server
+    window.chatConfig = {
+        currentUserId: <%- currentUserId %>,
+        receiverId: <%- receiverId || 'null' %>
+    };
+</script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/socket.js"></script>

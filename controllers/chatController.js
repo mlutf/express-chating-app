@@ -1,25 +1,63 @@
-const { Message, User } = require('../models');
+const { Message, User, Sequelize } = require('../models');
+const Op = Sequelize.Op;
 
 exports.getChatPage = async (req, res) => {
     try {
-        const messages = await Message.findAll({
-            include: [{
-                model: User,
-                as: 'user',
-                attributes: ['username']
-            }],
-            order: [['createdAt', 'ASC']]
+        const currentUserId = req.session.userId;
+        const receiverId = req.params.receiverId;
+
+        const allUsers = await User.findAll({
+            where: {
+                id: { [Op.ne]: currentUserId }
+            },
+            attributes: ['id', 'username']
         });
+
+        let messages = [];
+        if (receiverId) {
+            messages = await Message.findAll({
+                where: {
+                    [Op.or]: [
+                        { userId: currentUserId, receiverId: receiverId },
+                        { userId: receiverId, receiverId: currentUserId }
+                    ]
+                },
+                include: [{
+                    model: User,
+                    as: 'sender',
+                    attributes: ['username']
+                }],
+                order: [['createdAt', 'ASC']]
+            });
+        } else {
+            messages = await Message.findAll({
+                where: {
+                    receiverId: null
+                },
+                include: [{
+                    model: User,
+                    as: 'sender',
+                    attributes: ['username']
+                }],
+                order: [['createdAt', 'ASC']]
+            });
+        }
+
         res.render('chat', {
-            currentUserId: req.session.userId,
+            layout: 'layouts/layout',
+            currentUserId: currentUserId,
+            allUsers: allUsers,
+            receiverId: receiverId,
             messages: messages.map(msg => ({
-                username: msg.user.username,
+                id: msg.id,
+                senderId: msg.userId,
+                username: msg.sender.username,
                 message: msg.message,
                 timestamp: msg.createdAt
             }))
         });
     } catch (error) {
-        console.error('Error fetching messages:', error);
-        res.redirect('/login'); // Redirect to login on error
+        console.error('Error fetching chat data:', error);
+        res.redirect('/login');
     }
 };

@@ -1,0 +1,60 @@
+#chat {
+  height: 100vh;
+}
+
+body {
+  height: 100vh;
+}
+
+.chat-area {
+  height: 75vh;
+}
+
+#lista-conversas {
+  height: 70vh;
+}
+
+#icons {
+  cursor: pointer;
+}
+
+.start-103 {
+  left: 105% !important;
+}
+
+.start--7 {
+  left: -7px !important;
+}
+
+.msg-recebida {
+  background: #b1fcc1;
+  color: black;
+  max-width: 50%;
+}
+
+.msg-enviada {
+  background: #e1e6e2;
+  color: black;
+  max-width: 50%;
+}
+
+.status-ok {
+  color: blue;
+  font-weight: bolder;
+}
+
+.selected {
+  background: #f7e1ef;
+}
+
+.list-group-item {
+  cursor: pointer;
+}
+
+.list-group-item.selected:hover {
+  background: #f7e1ef;
+}
+
+.list-group-item:hover {
+  background: #f5f5f5;
+}

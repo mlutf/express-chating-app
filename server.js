@@ -3,30 +3,27 @@ const http = require('http');
 const path = require('path');
 const session = require('express-session');
 const db = require('./models');
+const expressLayouts = require('express-ejs-layouts')
 
 const app = express();
 const server = http.createServer(app);
 const io = require('socket.io')(server);
 const sessionMiddleware = session({
-    secret: 'your_secret_key', // Replace with a strong secret in production
+    secret: 'express-chating',
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false } // Set to true if using HTTPS
+    rolling: true,
+    cookie: { secure: false, maxAge: null }
 });
 
 app.use(sessionMiddleware);
-io.use((socket, next) => {
-    sessionMiddleware(socket.request, socket.request.res || {}, next);
-});
 
-// Set EJS as the templating engine
+app.use(expressLayouts)
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Body parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -44,45 +41,11 @@ app.get('/', (req, res) => {
         res.redirect('/login');
     }
 });
-
-// Socket.IO handling
-io.on('connection', (socket) => {
-    console.log('a user connected');
-
-    // Get userId from session
-    const userId = socket.request.session.userId;
-    let username = 'Guest'; // Default username
-
-    if (userId) {
-        db.User.findByPk(userId).then(user => {
-            if (user) {
-                username = user.username;
-                console.log(`User ${username} (${userId}) connected`);
-            }
-        });
-    }
-
-    socket.on('chat message', async (msg) => {
-        if (userId && msg) {
-            try {
-                const message = await db.Message.create({
-                    userId: userId,
-                    message: msg
-                });
-                io.emit('chat message', { username: username, message: msg, timestamp: message.createdAt });
-            } catch (error) {
-                console.error('Error saving message:', error);
-            }
-        }
-    });
-
-    socket.on('disconnect', () => {
-        console.log('user disconnected');
-    });
-});
+const initSocket = require('./services/SocketReciver');
+initSocket(io, sessionMiddleware, db);
 
 db.sequelize.sync().then(() => {
     server.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+        console.log(`Server running on http://localhost:${PORT}`);
     });
 });

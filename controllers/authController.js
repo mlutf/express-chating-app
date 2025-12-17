@@ -2,7 +2,10 @@ const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 
 exports.getRegister = (req, res) => {
-    res.render('register', { error: req.session.error });
+    res.render('auth/register', { 
+        layout: false,
+        error: req.session.error
+     });
     delete req.session.error;
 };
 
@@ -19,7 +22,10 @@ exports.postRegister = async (req, res) => {
 };
 
 exports.getLogin = (req, res) => {
-    res.render('login', { error: req.session.error });
+    res.render('auth/login', { 
+        layout: false,
+        error: req.session.error 
+    });
     delete req.session.error;
 };
 
@@ -29,7 +35,7 @@ exports.postLogin = async (req, res) => {
         const user = await User.findOne({ where: { username } });
         if (user && await bcrypt.compare(password, user.password)) {
             req.session.userId = user.id;
-            res.redirect('/chat'); // Redirect to chat page after successful login
+            res.redirect('/chat');
         } else {
             req.session.error = 'Invalid username or password';
             res.redirect('/login');
