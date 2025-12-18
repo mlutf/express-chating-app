@@ -4,7 +4,6 @@ const Op = Sequelize.Op;
 exports.getChatPage = async (req, res) => {
     try {
         const currentUserId = req.session.userId;
-        const receiverId = req.params.receiverId;
 
         const allUsers = await User.findAll({
             where: {
@@ -13,8 +12,24 @@ exports.getChatPage = async (req, res) => {
             attributes: ['id', 'username']
         });
 
+        res.render('chat', {
+            layout: 'layouts/layout',
+            currentUserId: currentUserId,
+            allUsers: allUsers,
+        });
+    } catch (error) {
+        console.error('Error fetching chat data:', error);
+        res.redirect('/login');
+    }
+};
+
+exports.getMessages = async (req, res) => {
+    try {
+        const currentUserId = req.session.userId;
+        const receiverId = req.query.receiverId;
+
         let messages = [];
-        if (receiverId) {
+        if (receiverId && receiverId !== 'null') {
             messages = await Message.findAll({
                 where: {
                     [Op.or]: [
@@ -43,11 +58,7 @@ exports.getChatPage = async (req, res) => {
             });
         }
 
-        res.render('chat', {
-            layout: 'layouts/layout',
-            currentUserId: currentUserId,
-            allUsers: allUsers,
-            receiverId: receiverId,
+        res.json({
             messages: messages.map(msg => ({
                 id: msg.id,
                 senderId: msg.userId,
@@ -57,7 +68,7 @@ exports.getChatPage = async (req, res) => {
             }))
         });
     } catch (error) {
-        console.error('Error fetching chat data:', error);
-        res.redirect('/login');
+        console.error('Error fetching messages:', error);
+        res.status(500).json({ error: 'Failed to fetch messages' });
     }
 };

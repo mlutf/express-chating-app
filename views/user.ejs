@@ -1,8 +1,8 @@
 <div class="col-12 m-0 p-0 overflow-auto">
   <ul id="lista-conversas" class="list-group">
     <% allUsers.forEach(function(user) { %>
-      <li class="list-group-item p-3 selected">
-        <a href="/chat/<%= user.id %>" class="text-decoration-none <%= receiverId == user.id ? 'active' : '' %>">
+      <li class="list-group-item p-3 user-item" data-user-id="<%= user.id %>">
+        <a href="#" class="text-decoration-none user-link">
           <div class="row">
             <div class="col-3">
               <img src="/avatar.png" class="img-fluid rounded-circle border mt-1" alt="<%= user.username %>">

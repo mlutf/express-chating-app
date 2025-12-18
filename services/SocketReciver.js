@@ -6,8 +6,6 @@ module.exports = function initSocket(io, sessionMiddleware, db) {
     });
 
     io.on('connection', async (socket) => {
-        console.log('a user connected');
-
         const userId = socket.request.session.userId;
         let username = 'Guest';
 
@@ -16,8 +14,6 @@ module.exports = function initSocket(io, sessionMiddleware, db) {
                 const user = await db.User.findByPk(userId);
                 if (user) {
                     username = user.username;
-                    console.log(`User ${username} (${userId}) connected`);
-
                     if (!userSocketMap.has(userId)) {
                         userSocketMap.set(userId, new Set());
                     }

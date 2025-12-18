@@ -23,12 +23,8 @@
           <img src="/avatar.png" class="img-fluid rounded-circle border" style="width: 50px; height: 50px;" alt="User">
         </div>
         <div class="flex-grow-1">
-          <p class="fw-bolder text-truncate p-0 m-0">
-            <% if (receiverId) { %>
-              <%= allUsers.find(u => u.id == receiverId)?.username || 'User' %>
-            <% } else { %>
-              Public Chat
-            <% } %>
+          <p id="chat-username" class="fw-bolder text-truncate p-0 m-0">
+            Select a chat
           </p>
         </div>
       </div>
@@ -36,37 +32,28 @@
   </nav>
 
   <div id="chat-area" class="chat-area overflow-auto bg-white flex-grow-1 p-3" style="height: calc(100vh - 200px);">
-    <% if (messages.length === 0) { %>
-      <div class="text-center text-muted mt-5">
-        <p>No messages yet. Start the conversation!</p>
-      </div>
-    <% } else { %>
-      <% messages.forEach(function(message) { %>
-              <div id="chat-messages" class="<%= receiverId == message.senderId ? 'msg-recebida float-start' : 'msg-enviada float-end ' %> position-relative p-3 m-2 rounded-3">
-                <%= message.message %>
-                <br>
-                <small class="float-end text-muted">
-                    <%= new Date(message.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) %> 
-                </small>
-              </div>
-              <span class="clearfix"></span>
-          <% }); %>
-    <% } %>
+    <div class="text-center text-muted mt-5">
+      <p>No messages yet. Start the conversation!</p>
+    </div>
   </div>
 
   <div class="input-group p-3 border-top bg-light">
     <input id="message-input" type="text" class="form-control border border-secondary p-3" placeholder="Type a message..." aria-label="Message input">
     <button id="send-button" class="btn btn-primary px-4" type="button">
       <i class="fas fa-paper-plane"></i>
-    </button>
+    </button>             
   </div>
 </div>
+
 <script>
-    // Global variables from server
     window.chatConfig = {
         currentUserId: <%- currentUserId %>,
-        receiverId: <%- receiverId || 'null' %>
+        receiverId: null
     };
+    document.querySelector('form[action="/logout"]').addEventListener('submit', function() {
+        localStorage.removeItem('currentReceiverId');
+        localStorage.removeItem('currentReceiverUsername');
+    });
 </script>
 <script src="/socket.io/socket.io.js"></script>
-<script src="/js/socket.js"></script>
+<script src="/js/socket.js"></script>                             
