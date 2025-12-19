@@ -24,7 +24,7 @@ module.exports = function initSocket(io, sessionMiddleware, db) {
             }
         }
 
-        socket.on('chat message', async (data) => {
+        socket.on('chat-message', async (data) => {
             const { message, receiverId } = data;
 
             if (!userId || !message) return;
@@ -47,17 +47,17 @@ module.exports = function initSocket(io, sessionMiddleware, db) {
                 if (receiverId) {
                     if (userSocketMap.has(userId)) {
                         userSocketMap.get(userId).forEach(id =>
-                            io.to(id).emit('chat message', messageData)
+                            io.to(id).emit('chat-message', messageData)
                         );
                     }
 
-                    if (userSocketMap.has(receiverId)) {
-                        userSocketMap.get(receiverId).forEach(id =>
-                            io.to(id).emit('chat message', messageData)
+                    if (userSocketMap.has(parseInt(receiverId))) {
+                        userSocketMap.get(parseInt(receiverId)).forEach(id =>
+                            io.to(id).emit('chat-message', messageData)
                         );
                     }
                 } else {
-                    io.emit('chat message', messageData);
+                    io.emit('chat-message', messageData);
                 }
             } catch (error) {
                 console.error('Socket error:', error);

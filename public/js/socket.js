@@ -87,7 +87,7 @@ function scrollToBottom() {
 function sendMessage() {
     const message = messageInput.value.trim();
     if (message) {
-        socket.emit('chat message', { message, receiverId });
+        socket.emit('chat-message', { message, receiverId });
         messageInput.value = '';
     }
 }
@@ -150,16 +150,9 @@ document.addEventListener('click', function(e) {
     }
 });
 
-socket.on('chat message', (msg) => {
-    const isPublicMessage = !msg.receiverId;
-    const isPrivateMessageForCurrentUser = 
-        (msg.receiverId == currentUserId && msg.senderId == receiverId) || 
-        (msg.senderId == currentUserId && msg.receiverId == receiverId);
-
-    if ((isPublicMessage && !receiverId) || isPrivateMessageForCurrentUser) {
-        renderMessage(msg);
-        scrollToBottom();
-    }
+socket.on('chat-message', (msg) => {
+    renderMessage(msg);
+    scrollToBottom();
 });
 
 restoreLastChat();

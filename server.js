@@ -13,7 +13,7 @@ const sessionMiddleware = session({
     resave: false,
     saveUninitialized: true,
     rolling: true,
-    cookie: { secure: false, maxAge: null }
+    cookie: { secure: false }
 });
 
 app.use(sessionMiddleware);
