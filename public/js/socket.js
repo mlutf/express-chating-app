@@ -155,4 +155,66 @@ socket.on('chat-message', (msg) => {
     scrollToBottom();
 });
 
+let currentCall = {
+  userId: null,
+  username: null
+};
+
+const callBtn = document.getElementById('call-voice');
+
+callBtn?.addEventListener('click', e => {
+  e.preventDefault();
+
+  const receiverId = window.chatConfig.receiverId;
+
+  if (!receiverId) {
+    alert('Select a chat first');
+    return;
+  }
+
+  socket.emit('call-user', {
+    to: parseInt(receiverId)
+  });
+});
+
+socket.on('incoming-call', data => {
+  currentCall.userId = data.from;
+  currentCall.username = data.username;
+
+  document.getElementById('caller-name').innerText = data.username;
+  document.getElementById('incoming-call').classList.remove('d-none');
+});
+
+document.getElementById('accept-call')?.addEventListener('click', () => {
+  socket.emit('call-response', {
+    to: currentCall.userId,
+    accepted: true
+  });
+
+  document.getElementById('incoming-call').classList.add('d-none');
+
+  console.log('Call accepted');
+  // 👉 NEXT: start WebRTC getUserMedia()
+});
+
+document.getElementById('reject-call')?.addEventListener('click', () => {
+  socket.emit('call-response', {
+    to: currentCall.userId,
+    accepted: false
+  });
+
+  document.getElementById('incoming-call').classList.add('d-none');
+  currentCall = {};
+});
+
+socket.on('call-response', data => {
+  if (!data.accepted) {
+    alert('Call rejected');
+    return;
+  }
+
+  console.log('Call accepted by receiver');
+  // 👉 NEXT: create WebRTC offer
+});
+
 restoreLastChat();
