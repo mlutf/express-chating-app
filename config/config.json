@@ -1,7 +1,7 @@
 {
   "development": {
     "username": "root",
-    "password": "password",
+    "password": "",
     "database": "express_chating_app",
     "host": "127.0.0.1",
     "port": 3306,
@@ -9,14 +9,14 @@
   },
   "test": {
     "username": "root",
-    "password": "password",
+    "password": "",
     "database": "express_chating_app",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },
   "production": {
     "username": "root",
-    "password": "password",
+    "password": "",
     "database": "express_chating_app",
     "host": "127.0.0.1",
     "dialect": "mysql"
